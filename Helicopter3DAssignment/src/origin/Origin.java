@@ -1,20 +1,21 @@
 package origin;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.glu.GLU;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.glu.GLU;
 
 import resources.Colours;
 import shapes.Line;
 import shapes.Sphere;
+import shapes.StaticShape;
 
 /**
  * Draws a ball at the origin and three lines representing the unit vector X Y Z directions
  * 
  * @author Maya Ashizumi-Munn | ID: 17978640
  */
-public class Origin {
+public class Origin extends StaticShape {
 	
-	GL gl;
+	GL2 gl;
 	GLU glu = new GLU();
 	
 	//Indices of display-lists
@@ -23,37 +24,40 @@ public class Origin {
 	
 	/**
 	 * Constructor for Origin class
-	 * @param gl graphics library reference for drawing
-	 * @param glu graphics library reference for drawing (3D)
+	 * @param gl2 graphics library reference for drawing
+	 * @param glu2 graphics library reference for drawing (3D)
 	 */
-	public Origin(GL gl, GLU glu) {
-		this.gl = gl;
-		this.glu = glu;
+	public Origin(GL2 gl2, GLU glu2) {
+		this.gl = gl2;
+		this.glu = glu2;
 		
 		//Creating display-list objects
-		ballDisplayList = gl.glGenLists(2);
+		ballDisplayList = gl2.glGenLists(2);
 		vectorDisplayList = ballDisplayList + 1;
 	}
 	
 	//*********************************//
 	
+	@Override
 	public void draw() {
+		//Call display lists to be drawn in display()
 		gl.glCallList(ballDisplayList);
 		gl.glCallList(vectorDisplayList);
 	}
 	
+	@Override
 	public void precompileDisplayList() {
-		//Pre-compile commands in the two lists
+		//Pre-compile commands in the two lists in init()
 		this.compileBall();
 		this.compileVectors();
 	}
 	
 	private void compileBall() {
 		//Pre-compile ball draw commands into display list
-		gl.glNewList(ballDisplayList, GL.GL_COMPILE);
+		gl.glNewList(ballDisplayList, GL2.GL_COMPILE);
 			
 			//Set sphere details
-			double ballRadius = 0.3;
+			double ballRadius = 0.12;
 			int ballSlices = 30;
 			int ballStacks = 30;
 			int drawStyle = GLU.GLU_FILL;
@@ -75,27 +79,13 @@ public class Origin {
 	
 	private void compileVectors() {
 		//Pre-compile XYZ vector drawing into display list
-		gl.glNewList(vectorDisplayList, GL.GL_COMPILE);
-		double lineLength = 0.05;
-		double[] startPoints = {0, 0, 0};
+		gl.glNewList(vectorDisplayList, GL2.GL_COMPILE);
+		double lineLength = 2;
 			
 		//Draw lines
-			//Draw X
-			double[] xColour = Colours.RED.getRGB();
-			double[] xEndPoints = {lineLength, 0, 0};
-			Line xLine = new Line(xColour, startPoints, xEndPoints);
-			xLine.drawLine(gl);
+			Line line = new Line(lineLength);
+			line.drawCoordinateLines(gl);
 			
-			//Draw Y
-			double[] yColour = Colours.GREEN.getRGB();
-			double[] yEndPoints = {0, lineLength, 0};
-			Line yLine = new Line(yColour, startPoints, yEndPoints);
-			yLine.drawLine(gl);
-			
-			//Draw Z
-			double[] zColour = Colours.BLUE.getRGB();
-			double[] zEndPoints = {0, 0, lineLength};
-			Line zLine = new Line(zColour, startPoints, zEndPoints);
-			zLine.drawLine(gl);
+		gl.glEndList();
 	}
 }

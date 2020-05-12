@@ -1,26 +1,27 @@
 package main;
 
-/**
- * Chopper - yeah.
- * 
- * @author Jacqueline Whalley
- */
-
-import com.sun.opengl.util.FPSAnimator;
-
+import helihierarchy.CreateHelicopter;
+import helihierarchy.heliparts.CoordinateSystem;
+import helihierarchy.heliparts.TreeNode;
 import origin.Origin;
-import scene.Camera;
-import scene.Lighting;
+import resources.Colours;
+import scene.Ground;
+import sceneview.Camera;
+import sceneview.Lighting;
 
 import java.awt.Frame;
-
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.media.opengl.GL;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCanvas;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.glu.GLU;
+
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.util.FPSAnimator;
+import com.jogamp.opengl.GL2;
+
 
 /**
  * Starting class for Assignment 2 - Project Part I (2016)
@@ -33,7 +34,7 @@ import javax.media.opengl.glu.GLU;
  * @author Jacqueline Whalley
  *
  */
-public class HeliFlight implements GLEventListener {
+public class HeliFlight implements GLEventListener, KeyListener {
 
 	private static GLCanvas canvas;
 	
@@ -41,11 +42,12 @@ public class HeliFlight implements GLEventListener {
 	private Camera camera;
 	private Lighting lights;
 	private Origin origin;
+	private Ground ground;
+	private TreeNode heliRoot;
 	
-	//Drawing functionality
-	GL gl;
+	//Drawing functionality libraries
+	GL2 gl;
 	GLU glu;
-	
 	
 	public static void main(String[] args) {
 		
@@ -53,11 +55,14 @@ public class HeliFlight implements GLEventListener {
 		canvas = new GLCanvas();
 		HeliFlight app = new HeliFlight();
 		canvas.addGLEventListener(app);
+		canvas.addKeyListener(app); //Key listener
 		
+		//Print out key mappings to user
+		printKeyMappings();
 
 		frame.add(canvas);
 		frame.setSize(1000, 500);
-		final FPSAnimator animator = new FPSAnimator(canvas,60);
+		final FPSAnimator animator = new FPSAnimator(canvas, 60);
 		frame.addWindowListener(new WindowAdapter() {
 
 			@Override
@@ -80,45 +85,61 @@ public class HeliFlight implements GLEventListener {
 		frame.setVisible(true);
 		animator.start();
 	}
-
 	
+	private static void printKeyMappings() {
+		//Prints key mappings to user
+		System.out.println("KEY MAPPINGS:");
+		System.out.println(" L: Toggle wireframe view");
+	}
+
+
 
 	@Override
 	public void init(GLAutoDrawable drawable) {
-		gl = drawable.getGL();
+		gl = drawable.getGL().getGL2();
 		glu = new GLU();
 		
 		// Enable VSync
 		gl.setSwapInterval(1);
 		
 		// Setup the drawing area and shading mode
-		gl.glEnable (GL.GL_BLEND);
-		gl.glBlendFunc (GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		gl.glClearColor(0.1f, 0.1f, 0.6f, 0.8f);
-		gl.glShadeModel(GL.GL_SMOOTH);
-		gl.glEnable(GL.GL_DEPTH_TEST);
-
+		gl.glEnable (GL2.GL_BLEND);
+		gl.glBlendFunc (GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
 		
-		camera = new Camera(canvas);
-		lights = new Lighting(gl);
-		origin = new Origin(gl, glu);
-		//Call origins display lists
-		origin.precompileDisplayList();
+		//Background colour (sky colour)
+		float[] bgColour = Colours.SKY_BLUE.getFloatRGB();
+		gl.glClearColor(bgColour[0], bgColour[1], bgColour[2], 0.9f);
+		gl.glShadeModel(GL2.GL_SMOOTH);
+		gl.glEnable(GL2.GL_DEPTH_TEST);
+
+		//Initialise scene objects
+		initScene();
+		
+		//Initialise helicopter objects (create world root node)
+		heliRoot = new CoordinateSystem(2, 1);
+		//Gets the treenode object of the helicopter capsule and adds it as roots child
+		heliRoot.addChild(new CreateHelicopter().drawHeliParts());
 	}
 	
 	@Override
 	public void display(GLAutoDrawable drawable) {
 
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-		gl.glEnable(GL.GL_COLOR_MATERIAL);
+		//Do animations first - TODO
+		
+		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
+		gl.glEnable(GL2.GL_COLOR_MATERIAL);
 		
 		//Default (not coded by me)
 		camera.draw(gl);		
 		lights.draw(gl);
-		//Added
-		origin.draw(); //Calls display lists
 		
-		//Removed teapot GLUT
+		//Added by myself for assignment
+		//Calling display lists to be drawn for scene objects
+		origin.draw();
+		ground.draw(); 
+		
+		//Calling helicopter display lists to be drawn
+		heliRoot.draw(gl, glu);
 		
 		// Flush all drawing operations to the graphics card
 		gl.glFlush();
@@ -128,10 +149,56 @@ public class HeliFlight implements GLEventListener {
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 		camera.newWindowSize(width, height);
 	}
+	
+	//**********************************************//
+	
+	private void initScene() {
+		//Initialise scene objects
+		camera = new Camera(canvas);
+		lights = new Lighting(gl);
+		origin = new Origin(gl, glu);
+		//Ground try-catch for odd number exception
+		try {
+			ground = new Ground(gl);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		//Call display lists to compile
+		origin.precompileDisplayList();
+		ground.precompileDisplayList();
+	}
+	
+	//***************************************************// 
 
+		@Override
+		public void keyPressed(KeyEvent arg0) {
+			int key = arg0.getKeyCode();
+			
+			if (key == KeyEvent.VK_L) {
+				//L key toggles drawing mode change
+				ground.toggleDrawMode();
+			}
+		}
+		
+		//******* Redundant KeyListener methods *************//
 
-	//methods not used
-	@Override
-	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {}
+		@Override
+		public void keyReleased(KeyEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void keyTyped(KeyEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void dispose(GLAutoDrawable drawable) {
+			// TODO Auto-generated method stub
+			
+		}
 	
 }

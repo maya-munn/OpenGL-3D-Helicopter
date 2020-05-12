@@ -1,8 +1,9 @@
 package shapes;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.glu.GLU;
-import javax.media.opengl.glu.GLUquadric;
+import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.glu.GLUquadric;
+
+import com.jogamp.opengl.GL2;
 
 /**
  * Draws a custom sphere
@@ -11,7 +12,7 @@ import javax.media.opengl.glu.GLUquadric;
  */
 public class Sphere {
 	
-	GL gl;
+	GL2 gl;
 	GLU glu;
 	double radius;
 	int slices;
@@ -22,8 +23,19 @@ public class Sphere {
 	
 	//************************************//
 	
-	public Sphere(GL gl, GLU glu, double radius, int slices, int stacks, int drawStyle) throws Exception {
-		this.setGL(gl, glu);
+	/**
+	 * Instantiates a custom sphere
+	 * 
+	 * @param gl2
+	 * @param glu2
+	 * @param radius
+	 * @param slices
+	 * @param stacks
+	 * @param drawStyle
+	 * @throws Exception
+	 */
+	public Sphere(GL2 gl2, GLU glu2, double radius, int slices, int stacks, int drawStyle) throws Exception {
+		this.setGL(gl2, glu2);
 		this.setRadius(radius);
 		this.setSlices(slices);
 		this.setStacks(stacks);
@@ -46,17 +58,18 @@ public class Sphere {
 		glu.gluQuadricDrawStyle(sphere, drawStyle);
 		//Draw sphere in specified draw style and dimensions
 		glu.gluSphere(sphere, this.getRadius(), this.getSlices(), this.getStacks());
+		this.deleteQuadric();
 	}
 	
-	public void deleteSphere() {
+	public void deleteQuadric() {
 		//Delete sphere when done with it
 		glu.gluDeleteQuadric(sphere);
 	}
 	
 	//************************************//
 	
-	private void setGL(GL gl, GLU glu) {
-		this.gl = gl;
+	private void setGL(GL2 gl2, GLU glu) {
+		this.gl = gl2;
 		this.glu = glu;
 	}
 	
