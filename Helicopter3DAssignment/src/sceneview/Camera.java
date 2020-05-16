@@ -4,6 +4,8 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.awt.GLCanvas;
@@ -12,25 +14,34 @@ import com.jogamp.opengl.glu.GLU;
 /**
  * Basic Camera class 
  * 
- * Implementation of this class has been heavily inspired by Camera.java
+ * Implementation of this class has been heavily inspired by Camera.java and TrackBallCamera.java
  * in projections and camera movement from example code.
  * 
  * @author Jacqueline Whalley
- *
+ * Modified by Maya Ashizumi-Munn
  */
 public class Camera implements MouseListener, MouseMotionListener {
 	
-	private static final double FOV = 45;
-	
+	//Window size
 	double windowWidth      = 1;
 	double windowHeight     = 1;
 	
-	boolean firstTime = true;
+	//Camera rotation variables
+	private double angleX = 90;
+	private double angleY = 10;
 	
-	//Camera movement variables
-	private double angleX;
-	private double angleY;
+	//Mouse variables
 	private Point oldMousePos;
+	private int whichMouseButton; 		//Stores if left, middle or right mouse button
+	
+	//Camera positioning variables
+	private final double MIN_DIST = 15; 	//Minimum distance of camera from center pos
+	private final double MAX_DIST = 40;
+	private double distanceToOrigin = MIN_DIST;
+	private final double FOV = 45; 			//Field of view
+	
+	//Helicopter position
+	private double[] lookAtPos = new double[3];
 	
 	//GL drawing functionalities
 	GL2 gl;
@@ -42,34 +53,57 @@ public class Camera implements MouseListener, MouseMotionListener {
 	}
 
 	public void draw(GL2 gl) {
-		gl.glPushMatrix();
-			// set up projection first
-			this.gl = gl;
-	        gl.glMatrixMode(GL2.GL_PROJECTION);
-	        gl.glLoadIdentity();
-	        glu = new GLU();
-	        glu.gluPerspective(FOV, (float) windowWidth / (float) windowHeight, 0.1, 100);
-	        // set up the camera position and orientation
-	        gl.glMatrixMode(GL2.GL_MODELVIEW);
-	        gl.glLoadIdentity();
-	        glu.gluLookAt(-20, 1,  -20, 	// eye
-	                	  0,   0,   0, 		// looking at 
-	                      0.0, 1.0, 0.0); 	// up   
-	        //Handles the camera when the mouse is dragged
-	        gl.glRotated(angleX, 1, 0, 0);
-	        gl.glRotated(angleY, 0, 1, 0);
+		// set up projection first
+		this.gl = gl;
+        gl.glMatrixMode(GL2.GL_PROJECTION);
+        gl.glLoadIdentity();
+        glu = new GLU();
+        glu.gluPerspective(FOV, (float) windowWidth / (float) windowHeight, 0.1, 100);
+        // set up the camera position and orientation
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glLoadIdentity();
+        
+        //Let rotation revolve around the look at center point
+        	double rotation = distanceToOrigin * Math.acos(Math.toRadians(angleY));
+        	double eyeZ = rotation * Math.cos(Math.toRadians(angleX));
+        	double eyeX = rotation * Math.sin(Math.toRadians(angleX));
+        	double eyeY = distanceToOrigin * Math.sin(Math.toRadians(angleY));
+        
+        //Set look at based on rotation, zoom
+        glu.gluLookAt(eyeX + lookAtPos[0], eyeY + lookAtPos[1] + 5, eyeZ, 			//Eye
+			  		  lookAtPos[0], lookAtPos[1], lookAtPos[2], 	//Look at
+				      0,            1,            0);				//Up
 	}
 	
 	/**
      * Sets up the lookAt point - could be a specified object's location
-     * @param x X coordinate of the lookAt point
-     * @param y Y coordinate of the lookAt point
-     * @param z Z coordinate of the lookAt point
+     * This is called in display from main class
      */
     public void setLookAt(double x, double y, double z) {
-       //TO DO
+        //Set look at based on helicopter position
+    	this.lookAtPos[0] = x; this.lookAtPos[1] = y; this.lookAtPos[2] = z;
     }
  
+    public double getDistance() {
+    	return this.distanceToOrigin;
+    }
+    
+    public void setDistance(double distance) {
+    	distanceToOrigin = distance;
+    	this.limitDistance();
+    	
+    }
+    
+    public void limitDistance() {
+    	if (distanceToOrigin < MIN_DIST) {
+    		//Set distance to minimum distance
+    		distanceToOrigin = MIN_DIST;
+    	}
+    	else if (distanceToOrigin > MAX_DIST) {
+    		//Set distasnce to maximum distance
+    		distanceToOrigin = MAX_DIST;
+    	}
+    }
 	
 	 /**
      * Passes a new window size to the camera.
@@ -84,55 +118,61 @@ public class Camera implements MouseListener, MouseMotionListener {
 		this.windowHeight = height;
     }
     
+    //Resets camera rotation
+    public void resetCameraRotation() {
+    	angleX = 90; angleY = 10;
+    	distanceToOrigin = MIN_DIST; //Default
+    	oldMousePos = null;
+    }
+    
     //**********************************************//
 
+    //Change the camera view when the mouse is dragged
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
-		//Change the camera view when the mouse is dragged
-		Point p = arg0.getPoint();
+		Point mousePoint = arg0.getPoint();
+		
 		if (oldMousePos != null) {
-			//If there has been a previous mouse position
-			angleY -= p.getX() - oldMousePos.getX();
-			angleX -= p.getY() - oldMousePos.getY();
+			//Do different actions depending on which mouse was pressed
+			switch (whichMouseButton) {
+				case MouseEvent.BUTTON1:
+					//ROTATE CAM
+					angleX -= mousePoint.getX() - oldMousePos.getX();
+					angleY += mousePoint.getY() - oldMousePos.getY();
+				break;
+				case MouseEvent.BUTTON3:
+					//CHANGE CAM DISTANCE
+					distanceToOrigin += 0.1 * (mousePoint.y - oldMousePos.y);
+					this.limitDistance();
+				break;
+			}
 		}
-		oldMousePos = p;
+		
+		oldMousePos = mousePoint;
+	}
+	
+	//Stores which mouse button has been pressed to determine mouseDragged function
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+		oldMousePos = arg0.getPoint(); //Stores where the mouse has been pressed
+		whichMouseButton = arg0.getButton();
+	}
+
+	//Reset mouse variables
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		oldMousePos = null;
+		whichMouseButton = 0;
 	}
 	
 	//******* Redundant mouse methods **************//
 
 	@Override
-	public void mouseMoved(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	public void mouseMoved(MouseEvent arg0) { }
 	@Override
-	public void mouseClicked(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-	}
-
+	public void mouseClicked(MouseEvent arg0) { } 
 	@Override
-	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	public void mouseEntered(MouseEvent arg0) { }
 	@Override
-	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mousePressed(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	public void mouseExited(MouseEvent arg0) { }
 }

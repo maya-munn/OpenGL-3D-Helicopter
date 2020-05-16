@@ -1,8 +1,10 @@
 package main;
 
 import helihierarchy.CreateHelicopter;
-import helihierarchy.heliparts.CoordinateSystem;
-import helihierarchy.heliparts.TreeNode;
+import helihierarchy.heliparts.Body;
+import helihierarchy.heliparts.Motor;
+import movement.InputHandler;
+import movement.MovementController;
 import origin.Origin;
 import resources.Colours;
 import scene.Ground;
@@ -10,8 +12,6 @@ import sceneview.Camera;
 import sceneview.Lighting;
 
 import java.awt.Frame;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -34,35 +34,42 @@ import com.jogamp.opengl.GL2;
  * @author Jacqueline Whalley
  *
  */
-public class HeliFlight implements GLEventListener, KeyListener {
+public class HeliFlight implements GLEventListener {
 
 	private static GLCanvas canvas;
 	
-	//scene objects
+	//Scene objects
 	private Camera camera;
 	private Lighting lights;
 	private Origin origin;
-	private Ground ground;
-	private TreeNode heliRoot;
+	private static Ground ground;
+	private Body heliBody;
 	
 	//Drawing functionality libraries
 	GL2 gl;
 	GLU glu;
 	
+	//Movement controller and input handler for helicopter
+	private static MovementController moveController;
+	private static InputHandler inputHandler;
+	
 	public static void main(String[] args) {
 		
+		System.out.println("Welcome to Maya's Helicopter Simulator");
 		Frame frame = new Frame("A2 3D Helicopter - Maya Ashizumi-Munn");	//Changed frame title
 		canvas = new GLCanvas();
+		
 		HeliFlight app = new HeliFlight();
 		canvas.addGLEventListener(app);
-		canvas.addKeyListener(app); //Key listener
 		
-		//Print out key mappings to user
-		printKeyMappings();
+		//Handling input and helicopter movement
+		moveController = new MovementController();
+		inputHandler = new InputHandler(moveController);
+		canvas.addKeyListener(inputHandler); //Key listener
 
 		frame.add(canvas);
 		frame.setSize(1000, 500);
-		final FPSAnimator animator = new FPSAnimator(canvas, 60);
+		final FPSAnimator animator = new FPSAnimator(canvas, 120);
 		frame.addWindowListener(new WindowAdapter() {
 
 			@Override
@@ -84,12 +91,6 @@ public class HeliFlight implements GLEventListener, KeyListener {
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		animator.start();
-	}
-	
-	private static void printKeyMappings() {
-		//Prints key mappings to user
-		System.out.println("KEY MAPPINGS:");
-		System.out.println(" L: Toggle wireframe view");
 	}
 
 
@@ -116,9 +117,20 @@ public class HeliFlight implements GLEventListener, KeyListener {
 		initScene();
 		
 		//Initialise helicopter objects (create world root node)
-		heliRoot = new CoordinateSystem(2, 1);
-		//Gets the treenode object of the helicopter capsule and adds it as roots child
-		heliRoot.addChild(new CreateHelicopter().drawHeliParts());
+		heliBody = new Body();
+		moveController.setHeliBody(heliBody);
+		
+		//Sets all the other helicopter parts as heli bodys child
+		CreateHelicopter heliCreator = new CreateHelicopter(gl);
+		heliCreator.createHeliParts(heliBody);
+
+		//Send reference of rotor motors to movement controller
+		Motor[] motors = heliCreator.getMotors();
+		moveController.setMotors(motors[0], motors[1], motors[2]);
+		
+		//Send reference of ground and camera to input handler
+		inputHandler.setGroundRef(ground);
+		inputHandler.setCameraRef(camera);
 	}
 	
 	@Override
@@ -129,17 +141,21 @@ public class HeliFlight implements GLEventListener, KeyListener {
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 		gl.glEnable(GL2.GL_COLOR_MATERIAL);
 		
-		//Default (not coded by me)
+		//Set camera location relative to helicopter position
+		camera.setLookAt(heliBody.getX(), heliBody.getY(), heliBody.getZ());
 		camera.draw(gl);		
+		
 		lights.draw(gl);
 		
-		//Added by myself for assignment
 		//Calling display lists to be drawn for scene objects
 		origin.draw();
 		ground.draw(); 
 		
 		//Calling helicopter display lists to be drawn
-		heliRoot.draw(gl, glu);
+		heliBody.draw(gl, glu);
+		
+		//Call movement methods
+		moveController.move();
 		
 		// Flush all drawing operations to the graphics card
 		gl.glFlush();
@@ -155,7 +171,8 @@ public class HeliFlight implements GLEventListener, KeyListener {
 	private void initScene() {
 		//Initialise scene objects
 		camera = new Camera(canvas);
-		lights = new Lighting(gl);
+		lights = new Lighting(gl); 
+		lights.enable();
 		origin = new Origin(gl, glu);
 		//Ground try-catch for odd number exception
 		try {
@@ -168,37 +185,8 @@ public class HeliFlight implements GLEventListener, KeyListener {
 		origin.precompileDisplayList();
 		ground.precompileDisplayList();
 	}
-	
-	//***************************************************// 
 
-		@Override
-		public void keyPressed(KeyEvent arg0) {
-			int key = arg0.getKeyCode();
-			
-			if (key == KeyEvent.VK_L) {
-				//L key toggles drawing mode change
-				ground.toggleDrawMode();
-			}
-		}
-		
-		//******* Redundant KeyListener methods *************//
-
-		@Override
-		public void keyReleased(KeyEvent arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void keyTyped(KeyEvent arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void dispose(GLAutoDrawable drawable) {
-			// TODO Auto-generated method stub
-			
-		}
-	
+	//Unimplemented dispose method
+	@Override
+	public void dispose(GLAutoDrawable drawable) { }
 }

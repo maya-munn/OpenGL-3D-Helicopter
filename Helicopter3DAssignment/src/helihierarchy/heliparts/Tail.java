@@ -2,44 +2,45 @@ package helihierarchy.heliparts;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.glu.GLU;
-import com.jogamp.opengl.glu.GLUquadric;
 
 import resources.Colours;
+import shapes.Cylinder;
 
 public class Tail extends TreeNode {
 
 	//Pointer to quadric object (display list)
 	private int displayList;
 	
-	//TODO - rotation parameters
-	
 	//Capsule customisation variables
 	Colours tailColour = Colours.YELLOW;
+	
+	//Length of tail
+	double length;
 	
 	//Initialise tail
 	public Tail() {
 		displayList = -1;
+		length = 7;
+	}
+	
+	public double getLength() {
+		return this.length;
 	}
 	
 	@Override
 	void initialiseDisplayList(GL2 gl, GLU glu) {
-		//Create quadric
-		GLUquadric tailQuad = glu.gluNewQuadric();
-		
 		//Create display list
 		displayList = gl.glGenLists(1);
 		
 		//Compile data in display list
 		gl.glNewList(displayList, GL2.GL_COMPILE);
-			//Quadric rendered as filled cylinder object
+			//Set cylinder colour
 			double[] tailColours = tailColour.getRGB();
 			gl.glColor3d(tailColours[0], tailColours[1], tailColours[2]);
-			glu.gluQuadricDrawStyle(tailQuad, GLU.GLU_FILL);
 			
 			//Set cylinder properties
 			double baseRadius = 1;
 			double topRadius = 0.5;
-			double height = 7; //Length of tail
 			int slices = 20;
 			int stacks = 20;
 			
@@ -47,7 +48,13 @@ public class Tail extends TreeNode {
 			gl.glPushMatrix();
 				//Rotate 90 degrees on y axis
 				gl.glRotated(90, 0, 90, 0);
-				glu.gluCylinder(tailQuad, baseRadius, topRadius, height, slices, stacks);
+				Cylinder tailCylinder;
+				try {
+					tailCylinder = new Cylinder(gl, glu, baseRadius, topRadius, length, slices, stacks, GLU.GLU_FILL);
+					tailCylinder.drawCylinder();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			gl.glPopMatrix();
 			
 		gl.glEndList();
@@ -65,19 +72,4 @@ public class Tail extends TreeNode {
 			gl.glCallList(displayList);
 		gl.glPopMatrix();
 	}
-	
-	//******** Translation/Rotation *********//
-	
-	@Override
-	void transformNode(GL2 gl) {
-		//Do translation relative to parent
-		gl.glTranslated(transX, transY, transZ);
-	}
-	
-	public void setTranslation(double x, double y, double z) {
-		transX = x;
-		transY = y;
-		transZ = z;
-	}
-
 }

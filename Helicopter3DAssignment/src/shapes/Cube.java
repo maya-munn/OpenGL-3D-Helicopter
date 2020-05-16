@@ -1,13 +1,13 @@
 package shapes;
 
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.util.gl2.GLUT;
 
 import resources.Colours;
 
 /**
  * Cube
  * Draws a cube
- * Some code has come from Cube class by JIER
  * 
  * @author Papaya
  */
@@ -15,7 +15,9 @@ public class Cube {
 	
 	int displayList;
 	
-	private Colours cubeColour = Colours.WHITE;
+	GLUT glut = new GLUT();
+	
+	private Colours cubeColour;
 	private double[] colourArray;
 	
 	private double scaleX, scaleY, scaleZ = 0;
@@ -32,24 +34,6 @@ public class Cube {
 	}
 	
 	//**************************************//
-	
-	final double[][] vertices = {
-			{-1, -1, -1}, 
-			{+1, -1, -1}, 
-			{+1, +1, -1}, 
-			{-1, +1, -1}, 
-			{-1, -1, +1},
-		    {+1, -1, +1}, 
-		    {+1, +1, +1}, 
-		    {-1, +1, +1}};
-
-	final int[][] faces = {
-			{0, 1, 2, 3}, 
-			{4, 5, 6, 7}, 
-			{0, 1, 5, 4}, 
-			{3, 2, 6, 7}, 
-			{1, 5, 6, 2},
-		    {0, 4, 7, 3}};
 	
 	public void draw(GL2 gl) {
 		//If display list not initialised, do now
@@ -70,16 +54,8 @@ public class Cube {
 		displayList = gl2.glGenLists(1);
 		
 		gl2.glNewList(displayList, GL2.GL_COMPILE);
-		
-			gl2.glBegin(GL2.GL_QUADS);
-				for (int[] face : faces) {
-					for (int vertex : face) {
-						gl2.glColor3d(colourArray[0], colourArray[1], colourArray[2]);
-						gl2.glVertex3d(vertices[vertex][0], vertices[vertex][1], vertices[vertex][2]);
-					}
-				}
-			gl2.glEnd();
-			
+			gl2.glColor3d(colourArray[0], colourArray[1], colourArray[2]);
+			glut.glutSolidCube(1);
 		gl2.glEndList();
 	}
 }

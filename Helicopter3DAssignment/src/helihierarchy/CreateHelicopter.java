@@ -1,74 +1,137 @@
 package helihierarchy;
 
-import helihierarchy.heliparts.Body;
-import helihierarchy.heliparts.CoordinateSystem;
+import com.jogamp.opengl.GL2;
+
 import helihierarchy.heliparts.Feet;
+import helihierarchy.heliparts.Motor;
+import helihierarchy.heliparts.Rotor;
 import helihierarchy.heliparts.Tail;
+import helihierarchy.heliparts.TailMotor;
 import helihierarchy.heliparts.TreeNode;
 
+/**
+ * Called from main classes init method, this instantiates helicopter 
+ * 
+ * @author Papaya
+ *
+ */
 public class CreateHelicopter {
-	//To be called from init 
 	
-	/*
-	 * Example
-	 * // upper arm of the Robot
-        upperArm = new RobotPart(UPPER_ARM_RADIUS, UPPER_ARM_HEIGHT, RobotPart.RotationAxis.Z);
-        upperArm.setTranslation(0, LOWER_ARM_HEIGHT, 0);
-        upperArm.addChild(new CoordinateSystem(1, 1));
+	GL2 gl; //Reference to gl drawing library
+	
+	//Default helicopter positions
+	double heliXPos;
+	double heliYPos;
+	double heliZPos;
+	double heliOnGroundYPos = 3.6;
+	
+	//Helicopter parts
+	Motor motor;
+	Rotor rotors;
+	
+	Feet leftFoot;
+	Feet rightFoot;
+	
+	Tail tail;
+	TailMotor tailMotor;
+	Motor leftTailMotor;
+	Motor rightTailMotor;
+	Rotor leftTailRotor;
+	Rotor rightTailRotor;
 
-        // Lower arm of robot
-        lowerArm = new RobotPart(LOWER_ARM_RADIUS, LOWER_ARM_HEIGHT, RobotPart.RotationAxis.Z);
-        lowerArm.addChild(upperArm);
-        lowerArm.setTranslation(0, BASE_HEIGHT, 0);
-        lowerArm.addChild(new CoordinateSystem(1, 1));
-
-        // Base of the Robot
-        robotBase = new RobotPart(BASE_RADIUS, BASE_HEIGHT, RobotPart.RotationAxis.Y);
-        robotBase.setTranslation(-1, 0, 0);
-        robotBase.addChild(lowerArm);
-        robotBase.addChild(new CoordinateSystem(2, 1));
-	 */
+	public CreateHelicopter(GL2 gl) {
+		//Set default helicopter position
+		heliXPos = 0;
+		heliYPos = heliOnGroundYPos; //Y position where the helicopter feet are on the ground
+		heliZPos = 0;
+		
+		this.gl = gl;
+	}
 	
+	//To sent references of motors
+	public Motor[] getMotors() {
+		Motor[] motors = new Motor[] {motor, leftTailMotor, rightTailMotor };
+		return motors;
+	}
 	
+	//*************************************//
 	
-	public TreeNode drawHeliParts() {
+	public TreeNode createHeliParts(TreeNode heliBody) {
+		gl.glPushMatrix();
+			gl.glPushMatrix();
+			
+			//Draw top motor and rotor
+				motor = new Motor(true); //True to do scale 
+				rotors = new Rotor();
+				rotors.setTranslation(-rotors.getLength() / 4, 0, 0);
+				motor.setTranslation(0, 1.6, 0);
+				
+				motor.addChild(rotors);
+				heliBody.addChild(motor);
+				
+			gl.glPopMatrix();
+			
+			//Draw helicopter feet
+			gl.glPushMatrix();
+				gl.glPushMatrix();
+					leftFoot = new Feet(Feet.Side.LEFT); 	
+					leftFoot.setTranslation(-1.5, -1.7, -0.7);
+					heliBody.addChild(leftFoot);
+				gl.glPopMatrix();
+				gl.glPushMatrix();
+					rightFoot = new Feet(Feet.Side.RIGHT);
+					rightFoot.setTranslation(-1.5, -1.7, 0.7);
+					heliBody.addChild(rightFoot);
+				gl.glPopMatrix();
+			gl.glPopMatrix();
+			
+			//Draw helicopter tail
+			gl.glPushMatrix();
+				tail = new Tail();
+				tail.setTranslation(2, 0, 0);
+				
+				tailMotor = new TailMotor();
+				//Move tailMotor up the length of tail
+				tailMotor.setTranslation(tail.getLength() / 2, 0, 0);
+				tail.addChild(tailMotor);
+				
+				//Add motor and rotor to each side of tailMotor
+				gl.glPushMatrix();
+					leftTailMotor = new Motor(false); //False to not scale
+					//Move left
+					tailMotor.addChild(leftTailMotor);
+					leftTailMotor.setTranslation(0, 0, tailMotor.getRadius() / 2);
+					
+					gl.glPushMatrix();
+						//Add rotors
+						leftTailRotor = new Rotor(1); //Length of blades
+						leftTailRotor.setTranslation(-leftTailRotor.getLength() / 4, 0, 0);
+						leftTailRotor.setRotation(90, 1, 0, 0);
+						leftTailMotor.addChild(leftTailRotor);
+					gl.glPopMatrix();
+				gl.glPopMatrix();
+				
+				gl.glPushMatrix();
+					rightTailMotor = new Motor(false); //False to not scale
+					//Move left
+					tailMotor.addChild(rightTailMotor);
+					rightTailMotor.setTranslation(0, 0, -tailMotor.getRadius() / 2);
+					
+					gl.glPushMatrix();
+						//Add rotors
+						rightTailRotor = new Rotor(1); //Length of blades
+						rightTailRotor.setTranslation(-rightTailRotor.getLength() / 4, 0, 0);
+						rightTailRotor.setRotation(90, 1, 0, 0);
+						rightTailMotor.addChild(rightTailRotor);
+					gl.glPopMatrix();
+				gl.glPopMatrix();
+				
+				heliBody.addChild(tail);
+			gl.glPopMatrix();
+			
+		gl.glPopMatrix();
 		
-		double middleYPos = 5;
-		
-		Feet leftFoot = new Feet();
-		Feet rightFoot = new Feet();
-		Tail heliTail = new Tail();
-		Body heliBody = new Body();
-		
-		//ROTOR
-		//Rotor blade x2
-		//Rotor motor stick
-		
-		//FEET
-		//Move left
-		leftFoot.setTranslation(0, 0, -2.4);
-		leftFoot.addChild(new CoordinateSystem(1, 1));
-		
-		//Move right and up Y axis and backwards on X axis
-		rightFoot.setTranslation(-2, -3.4, 1.2);
-		rightFoot.addChild(leftFoot);
-		rightFoot.addChild(new CoordinateSystem(1, 1));
-		//connectors x4
-		//Feet blade x2
-		
-		//TAIL
-		//Translate on x axis to move to end of capsule
-		heliTail.setTranslation(4, 0, 0);
-		heliTail.addChild(new CoordinateSystem(1, 1));
-		
-		//BODY
-		//add child, feet and rotor objects
-		heliBody.addChild(heliTail);
-		heliBody.addChild(rightFoot);
-		//Move up off the ground
-		heliBody.setTranslation(0, middleYPos, 0);
-		heliBody.addChild(new CoordinateSystem(1, 1));
-		
+		heliBody.setTranslation(heliXPos, heliYPos, heliZPos);
 		return heliBody;
 	}
 }

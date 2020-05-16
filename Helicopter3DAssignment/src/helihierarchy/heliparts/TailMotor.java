@@ -1,76 +1,66 @@
 package helihierarchy.heliparts;
 
-import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.glu.GLU;
 
 import resources.Colours;
 import shapes.Sphere;
 
 /**
- * Draws the body of the helicopter 
+ * Sphere with two rotors to attach to the back of the helicopter tail
  * 
- * @author Maya Ashizumi-Munn
+ * @author Papaya
  *
  */
-public class Body extends TreeNode {
+public class TailMotor extends TreeNode {
 
 	//Pointer to quadric object (display list)
 	private int displayList;
 	
-	//TODO - rotation parameters
-	
 	//Capsule customisation variables
-	Colours capsuleColour = Colours.MAGENTA;
+	Colours tailColour = Colours.YELLOW;
+	Colours tailMotorColour = Colours.BLACK;
 	
+	//Spheres radius
 	double radius;
 	
-	//Initialise capsule
-	public Body() {
+	//Initialise tail motor
+	public TailMotor() {
 		displayList = -1;
-		radius = 3;
+		radius = 0.75;
 	}
 	
 	public double getRadius() {
 		return this.radius;
 	}
 	
-	//Getter methods to get body position
-	public double getX() { return this.transX; }
-	public double getY() { return this.transY; }
-	public double getZ() { return this.transZ; }
-	
-	//***************************************//
-	
 	@Override
 	void initialiseDisplayList(GL2 gl, GLU glu) {
-		
 		//Create display list
 		displayList = gl.glGenLists(1);
 		
 		//Compile data in display list
 		gl.glNewList(displayList, GL2.GL_COMPILE);
 			//Set sphere colour
-			double[] capColours = capsuleColour.getRGB();
-			gl.glColor3d(capColours[0], capColours[1], capColours[2]);
+			double[] tailColours = tailColour.getRGB();
+			gl.glColor3d(tailColours[0], tailColours[1], tailColours[2]);
 			
 			//Set sphere properties
-			radius = 3.0f;
-			int slices = 20;
-			int stacks = 40;
+			int slices = 10;
+			int stacks = 10;
 			
-			//Draw sphere
+			//Draw cylinder
 			gl.glPushMatrix();
+				//Make a new sphere
 				try {
-					//Scale on x axis to make oval shape
-					gl.glScaled(1.5, 1, 1);
-					Sphere bodySphere = new Sphere(gl, glu, radius, slices, stacks, GLU.GLU_FILL);
-					bodySphere.drawSphere();
-				} catch (Exception e) { }
+					Sphere tailRotorSphere = new Sphere(gl, glu, radius, slices, stacks, GLU.GLU_FILL);
+					tailRotorSphere.drawSphere();
+				} catch (Exception e) { e.printStackTrace(); }
 			gl.glPopMatrix();
 			
 		gl.glEndList();
 	}
-	
+
 	@Override
 	void drawNode(GL2 gl) {
 		//If display list not initialised, do now

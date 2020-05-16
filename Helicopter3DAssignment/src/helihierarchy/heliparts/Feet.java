@@ -2,57 +2,75 @@ package helihierarchy.heliparts;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.glu.GLU;
-import com.jogamp.opengl.glu.GLUquadric;
 
 import resources.Colours;
+import shapes.Cylinder;
 
 public class Feet extends TreeNode {
 
+	//Display list index
 	private int displayList;
 	
+	//Helicopter feet colour
 	Colours feetColour = Colours.BLACK;
 	
-	public Feet() {
+	//What side this foot will be positioned
+	Side footSide;
+	
+	//Length of foot
+	double length;
+	
+	public Feet(Side footSide) {
 		displayList = -1;
+		this.footSide = footSide;
+		length = 6;
+	}
+	
+	public enum Side {
+		LEFT,
+		RIGHT;
+	}
+	
+	public double getLength() {
+		return this.length;
 	}
 	
 	//**************************************//
 	
 	@Override
 	void initialiseDisplayList(GL2 gl, GLU glu) {
-		//Create quadric
-		GLUquadric feetQuad = glu.gluNewQuadric();	//Feet base plank
-		GLUquadric connectorQuad = glu.gluNewQuadric(); //Connector 
 		
 		//Create display list
 		displayList = gl.glGenLists(1);
 		
 		//Compile data in display list
 		gl.glNewList(displayList, GL2.GL_COMPILE);
-			//Quadric rendered as filled cylinder object
+			//Set feet colour
 			double[] tailColours = feetColour.getRGB();
 			gl.glColor3d(tailColours[0], tailColours[1], tailColours[2]);
-			glu.gluQuadricDrawStyle(feetQuad, GLU.GLU_FILL);
-			glu.gluQuadricDrawStyle(connectorQuad, GLU.GLU_FILL);
 			
 			//Set feet cylinder properties
 			double radius = 0.2;
-			double height = 5; //Length of feet
 			int slicesStacks = 15;
 
 			//Draw feet cylinder
 			gl.glPushMatrix();
 				//Rotate 90 degrees on Y axis
 				gl.glRotated(90, 0, 1, 0);
-				glu.gluCylinder(feetQuad, radius, radius, height, slicesStacks, slicesStacks);
+				//Draw cylinder
+				try {
+					Cylinder feetCylinder = new Cylinder(gl, glu, radius, radius, length, slicesStacks, slicesStacks, GLU.GLU_FILL);
+					feetCylinder.drawCylinder();
+				} catch (Exception e) { e.printStackTrace(); }
+				
 			gl.glPopMatrix();
 			
-			drawConnectorCylinders(height, radius, gl, connectorQuad);
+			drawConnectorCylinders(length, radius, gl, glu);
 			
 		gl.glEndList();
 	}
 	
-	private void drawConnectorCylinders(double feetLength, double feetRadius, GL2 gl, GLUquadric connectorQ) {
+	private void drawConnectorCylinders(double feetLength, double feetRadius, GL2 gl, GLU glu) {
 		//Draw connector cylinders
 		double radius = 0.1;
 		//Save feet plank height for later use
@@ -65,7 +83,11 @@ public class Feet extends TreeNode {
 			gl.glRotated(-90, 1, 0, 0);
 			//Move this connector down on x axis by quarter of feet cylinder height 
 			gl.glTranslated(feetLength / 4, 0, 0);
-			glu.gluCylinder(connectorQ, radius, radius, height, slicesStacks, slicesStacks);
+			//Draw cylinder
+			try {
+				Cylinder frontConnector = new Cylinder(gl, glu, radius, radius, height, slicesStacks, slicesStacks, GLU.GLU_FILL);
+				frontConnector.drawCylinder();
+			} catch (Exception e) { e.printStackTrace(); }
 		gl.glPopMatrix();
 		
 		//Second connector cylinder
@@ -74,7 +96,11 @@ public class Feet extends TreeNode {
 			gl.glRotated(-90, 1, 0, 0);
 			//Move this connector up on x axis by quarter of feet cylinder height
 			gl.glTranslated(feetLength - ((feetLength / 4)), 0, 0);
-			glu.gluCylinder(connectorQ, radius, radius, height, slicesStacks, slicesStacks);
+			//Draw cylinder
+			try {
+				Cylinder backConnector = new Cylinder(gl, glu, radius, radius, height, slicesStacks, slicesStacks, GLU.GLU_FILL);
+				backConnector.drawCylinder();
+			} catch (Exception e) { e.printStackTrace(); }
 		gl.glPopMatrix();
 	}
 
@@ -89,19 +115,5 @@ public class Feet extends TreeNode {
 		gl.glPushMatrix();
 			gl.glCallList(displayList);
 		gl.glPopMatrix();
-	}
-	
-	//******** Translation/Rotation *********//
-	
-	@Override
-	void transformNode(GL2 gl) {
-		//Do translation relative to parent
-		gl.glTranslated(transX, transY, transZ);
-	}
-	
-	public void setTranslation(double x, double y, double z) {
-		transX = x;
-		transY = y;
-		transZ = z;
 	}
 }
