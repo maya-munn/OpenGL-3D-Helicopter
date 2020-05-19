@@ -6,6 +6,12 @@ import com.jogamp.opengl.glu.GLU;
 import resources.Colours;
 import shapes.Cylinder;
 
+/**
+ * Draws the feet (landing skids) of the helicopter 
+ * 
+ * @author Maya Ashizumi-Munn | 17978640
+ *
+ */
 public class Feet extends TreeNode {
 
 	//Display list index
@@ -26,7 +32,7 @@ public class Feet extends TreeNode {
 		length = 6;
 	}
 	
-	public enum Side {
+	public enum Side { //Used in createHelicopter to determine which side it will be drawn
 		LEFT,
 		RIGHT;
 	}

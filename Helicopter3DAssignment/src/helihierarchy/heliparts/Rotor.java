@@ -7,6 +7,12 @@ import shapes.Cylinder;
 
 import com.jogamp.opengl.GL2;
 
+/**
+ * Draws the rotors of the helicopter
+ * 
+ * @author Maya Ashizumi-Munn | 17978640
+ *
+ */
 public class Rotor extends TreeNode {
 
 	//Display list index

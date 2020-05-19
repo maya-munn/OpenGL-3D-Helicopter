@@ -46,10 +46,12 @@ public class Ground extends StaticShape {
 		if (drawMode == GroundDrawMode.FILLED) {
 			gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL); //Fill mode
 			gl.glCallList(groundDisplayList);
+			gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
 		}
 		else {
 			gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_LINE); //Line mode
 			gl.glCallList(groundDisplayList);
+			gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
 		}
 	}
 	

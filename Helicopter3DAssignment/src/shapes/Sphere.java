@@ -23,17 +23,6 @@ public class Sphere {
 	
 	//************************************//
 	
-	/**
-	 * Instantiates a custom sphere
-	 * 
-	 * @param gl2
-	 * @param glu2
-	 * @param radius
-	 * @param slices
-	 * @param stacks
-	 * @param drawStyle
-	 * @throws Exception
-	 */
 	public Sphere(GL2 gl2, GLU glu2, double radius, int slices, int stacks, int drawStyle) throws Exception {
 		this.setGL(gl2, glu2);
 		this.setRadius(radius);
@@ -45,9 +34,7 @@ public class Sphere {
 				this.setDrawStyle(drawStyle);
 				break;
 			default:
-				throw new Exception("Draw style not valid!");
-		}
-		
+				throw new Exception("Draw style not valid!"); }
 	}
 	
 	
@@ -66,7 +53,7 @@ public class Sphere {
 		glu.gluDeleteQuadric(sphere);
 	}
 	
-	//************************************//
+	//**** Setter methods *****************//
 	
 	private void setGL(GL2 gl2, GLU glu) {
 		this.gl = gl2;
@@ -89,7 +76,7 @@ public class Sphere {
 		this.drawStyle = drawStyle;
 	}
 	
-	//************************************//
+	//***** Getter methods ***************//
 	
 	private double getRadius() {
 		return this.radius;

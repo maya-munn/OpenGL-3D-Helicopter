@@ -8,8 +8,9 @@ import com.jogamp.opengl.GL2;
 /**
  * Basic Lighting setup for scene
  * Consists of global ambient lighting and 
+ * 
  * @author Jacqueline Whalley
- *
+ * Modified by Maya Ashizumi-Munn | 17978640
  */
 public class Lighting {
 	public GLU glu;
@@ -50,7 +51,7 @@ public class Lighting {
 	 * @param gl
 	 */
 	public Lighting(float[] position, GL2 gl) {
-		//TO DO
+		//To be implemented when scenes light pos needs to be changed
 	}
 	
 	/**
@@ -69,30 +70,5 @@ public class Lighting {
 	 */
 	public void disable(){
 		gl.glDisable(GL2.GL_LIGHT0); //keep ambient light
-	}
-
-	/**
-	 * Function to aid rendering and debugging
-	 * draws a small white sphere for the light source
-	 * draws a line from the light position through the XZ
-	 * plane - helps once other objects are in scene.
-	 * helps locate light0 in the scene
-	 * @param gl2
-	 */
-	public void draw(GL2 gl2) {
-		
-//		quadric = glu.gluNewQuadric();
-//		gl.glPushMatrix();
-//		gl.glDisable(GL2.GL_LIGHTING);
-//		gl.glColor4d(1, 1, 1, 1);
-//		gl.glTranslated(lightPosition[0], lightPosition[1], lightPosition[2]);
-//		glu.gluSphere(quadric, 0.1, 16, 8); // draw sphere translated to light position
-//		gl.glBegin(GL2.GL_LINES);
-//			gl.glVertex3f(0, 0, 0); 
-//			gl.glVertex3f(0, -100, 0); 
-//		gl.glEnd();
-//		
-//		gl.glEnable(GL2.GL_LIGHTING);
-//		gl.glPopMatrix();
 	}
 }

@@ -16,7 +16,7 @@ import shapes.StaticShape;
 public class Origin extends StaticShape {
 	
 	GL2 gl;
-	GLU glu = new GLU();
+	GLU glu;
 	
 	//Indices of display-lists
 	int ballDisplayList;

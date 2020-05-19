@@ -24,14 +24,16 @@ import com.jogamp.opengl.GL2;
 
 
 /**
- * Starting class for Assignment 2 - Project Part I (2016)
+ * Main class derived from: Starting class for Assignment 2 - Project Part I (2016)
  * Sets up prospective, a basic static camera and lighting
- * Renders a Utah Teapot at the origin
+ * 
+ * Renders a helicopter object in a scene
  * 
  * Implementation of reshape class has been taken from 
  * PAGE 12 of COMP612 lecture slides - Unit 11 - Camera Positioning
  * 
  * @author Jacqueline Whalley
+ * Modified by Maya Ashizumi-Munn | 17978640
  *
  */
 public class HeliFlight implements GLEventListener {
@@ -118,7 +120,7 @@ public class HeliFlight implements GLEventListener {
 		
 		//Initialise helicopter objects (create world root node)
 		heliBody = new Body();
-		moveController.setHeliBody(heliBody);
+		moveController.setHeliBody(heliBody, gl);
 		
 		//Sets all the other helicopter parts as heli bodys child
 		CreateHelicopter heliCreator = new CreateHelicopter(gl);
@@ -135,8 +137,6 @@ public class HeliFlight implements GLEventListener {
 	
 	@Override
 	public void display(GLAutoDrawable drawable) {
-
-		//Do animations first - TODO
 		
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 		gl.glEnable(GL2.GL_COLOR_MATERIAL);
@@ -144,8 +144,6 @@ public class HeliFlight implements GLEventListener {
 		//Set camera location relative to helicopter position
 		camera.setLookAt(heliBody.getX(), heliBody.getY(), heliBody.getZ());
 		camera.draw(gl);		
-		
-		lights.draw(gl);
 		
 		//Calling display lists to be drawn for scene objects
 		origin.draw();
@@ -155,7 +153,7 @@ public class HeliFlight implements GLEventListener {
 		heliBody.draw(gl, glu);
 		
 		//Call movement methods
-		moveController.move();
+		moveController.updateMovement();
 		
 		// Flush all drawing operations to the graphics card
 		gl.glFlush();

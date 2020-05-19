@@ -1,25 +1,32 @@
 package movement;
 
+import com.jogamp.opengl.GL2;
+
 import helihierarchy.heliparts.Body;
 import helihierarchy.heliparts.Motor;
 
 /**
- * Controls movement of the helicopter
+ * Controls movement of the helicopter based on input
+ * from InputHandler
  * 
- * @author Maya Ashizumi-Munn
+ * @author Maya Ashizumi-Munn | 17978640
  *
  */
 public class MovementController {
 
+	//Movement variables
 	double speed = 0;
 	double angle = 0; //Angle of rotors
 	final int MAX_SPEED;
 	double groundYPos; //Y position where body is on the ground
 	
+	//Objects that will be moved 
 	Body heliBody;
 	Motor mainMotor;
 	Motor leftTailMotor;
 	Motor rightTailMotor;
+	
+	GL2 gl;
 	
 	public MovementController() {
 		//Instantiating the maximum speed
@@ -27,9 +34,10 @@ public class MovementController {
 	}
 	
 	//Getting reference of helicopter body from main class
-	public void setHeliBody(Body heliBody) {
+	public void setHeliBody(Body heliBody, GL2 gl) {
 		this.heliBody = heliBody;
 		groundYPos = 3.6; //This is the Y pos of heli where the feet touch the ground perfectly
+		this.gl = gl;
 	}
 	
 	public void setMotors(Motor main, Motor leftTail, Motor rightTail) {
@@ -38,20 +46,24 @@ public class MovementController {
 		this.rightTailMotor = rightTail;
 	}
 	
+	
 	//*************************************//
 	
 	/**
 	 * Called from main class draw() method to continuously update 
 	 * movement
 	 */
-	public void move() {
+	public void updateMovement() {
 		//If speed has been set by user and not less or equal to 0, start rotating motors
 		if (speed > 0) {
 			rotateMotors();
 		}
+		
 	}
 	
 	//*************************************//
+	
+	
 	
 	private void rotateMotors() {
 		//Rotate all motors based on speed
@@ -86,17 +98,97 @@ public class MovementController {
 		}
 	}
 	
-	public void moveForwards() {
-		
+	//*************************************//
+	
+	private double heliPosX;
+	private double heliPosZ;
+	
+	public void moveForwards(double angleY) {
+		//Only move forward if in the air
+		if (heliBody.getY() > this.groundYPos) {
+			//Set positions based on current position
+			heliPosX = heliBody.getX();
+			heliPosZ = heliBody.getZ();
+			//Increment positions based on helicopter rotation
+			heliPosX -= Math.cos(Math.toRadians(angleY)) * 1;
+			heliPosZ += Math.sin(Math.toRadians(angleY)) * 1;
+			
+			heliBody.setTranslation(heliPosX, heliBody.getY(), heliPosZ);
+		}
 	}
-	public void moveBackwards() {
-		
+	public void moveBackwards(double angleY) {
+		//Only move forward if in the air
+		if (heliBody.getY() > this.groundYPos) {
+			//Set positions based on current position
+			heliPosX = heliBody.getX();
+			heliPosZ = heliBody.getZ();
+			//Increment positions based on helicopter rotation
+			heliPosX += Math.cos(Math.toRadians(angleY)) * 1;
+			heliPosZ -= Math.sin(Math.toRadians(angleY)) * 1;
+			
+			heliBody.setTranslation(heliPosX, heliBody.getY(), heliPosZ);
+		}
 	}
 	
-	public void moveSidewardsLeft() {
-		
+	public void strafeLeft(double angleY) {
+		//Only move left if in the air
+		if (heliBody.getY() > this.groundYPos) {
+			//Set positions based on current position
+			heliPosX = heliBody.getX();
+			heliPosZ = heliBody.getZ();
+			//Increment positions based on helicopter rotation
+			heliPosX += Math.cos(Math.toRadians(angleY - 90)) * 1;
+			heliPosZ -= Math.sin(Math.toRadians(angleY - 90)) * 1;
+			
+			heliBody.setTranslation(heliPosX, heliBody.getY(), heliPosZ);
+		}
 	}
-	public void moveSidewardsRight() {
+	public void strafeRight(double angleY) {
+		//Only move right if in the air
+		if (heliBody.getY() > this.groundYPos) {
+			//Set positions based on current position
+			heliPosX = heliBody.getX();
+			heliPosZ = heliBody.getZ();
+			//Increment positions based on helicopter rotation
+			heliPosX += Math.cos(Math.toRadians(angleY + 90)) * 1;
+			heliPosZ -= Math.sin(Math.toRadians(angleY + 90)) * 1;
+			
+			heliBody.setTranslation(heliPosX, heliBody.getY(), heliPosZ);
+		}
+	}
+	
+	//*************************************//
+	
+	private double turnAngle = 0;
+	
+	public double turnLeft() {
+		//Rotate body on Y axis by 1 degree for every key press
+		//But only if off the ground
+		if (heliBody.getY() > groundYPos) {
+			turnAngle += -1;
+			if (turnAngle > 360) {
+				turnAngle = 0;
+			}
+			gl.glPushMatrix();
+				heliBody.setRotation(turnAngle, 0, 1, 0);
+				heliBody.rotateNode(gl);
+			gl.glPopMatrix();
+		}
 		
+		return turnAngle;
+	}
+	public double turnRight() {
+		//Rotate body on Y axis by 1 degree for every key press
+		//But only if off the ground
+		if (heliBody.getY() > groundYPos) {
+			turnAngle += 1;
+			if (turnAngle > 360) {
+				turnAngle = 0;
+			}
+			heliBody.setRotation(turnAngle, 0, 1, 0);
+			heliBody.rotateNode(gl);
+		}
+		
+		return turnAngle;
 	}
 }

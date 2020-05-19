@@ -7,7 +7,7 @@ import resources.Colours;
 import shapes.Sphere;
 
 /**
- * Motor that sits on top of helicopter
+ * Draws the motors of the helicopter
  * Has rotors attached to it to spin and propel the helicopter
  * 
  * @author Papaya

@@ -9,7 +9,7 @@ import shapes.Sphere;
 /**
  * Draws the body of the helicopter 
  * 
- * @author Maya Ashizumi-Munn
+ * @author Maya Ashizumi-Munn | 17978640
  *
  */
 public class Body extends TreeNode {

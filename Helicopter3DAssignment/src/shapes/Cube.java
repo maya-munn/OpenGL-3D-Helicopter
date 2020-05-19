@@ -8,19 +8,25 @@ import resources.Colours;
 /**
  * Cube
  * Draws a cube
+ * Unusued in Assignment 2 
  * 
- * @author Papaya
+ * @author Maya Ashizumi-Munn | 17978640
  */
 public class Cube {
 	
+	//Display list index
 	int displayList;
 	
 	GLUT glut = new GLUT();
 	
+	//Cube colour
 	private Colours cubeColour;
 	private double[] colourArray;
 	
+	//Scaling variables of the cube
 	private double scaleX, scaleY, scaleZ = 0;
+	
+	//**************************************//
 	
 	public Cube(Colours cubeColour, double scaleX, double scaleY, double scaleZ) {
 		displayList = -1;
@@ -48,6 +54,7 @@ public class Cube {
 		gl.glPopMatrix();
 	}
 	
+	//Initialise cube display list
 	public void initDisplayList(GL2 gl2) {
 
 		//Create display list

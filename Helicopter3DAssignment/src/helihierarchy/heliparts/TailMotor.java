@@ -7,9 +7,9 @@ import resources.Colours;
 import shapes.Sphere;
 
 /**
- * Sphere with two rotors to attach to the back of the helicopter tail
+ * Draws the tail motor at the end of the tail of the helicopter 
  * 
- * @author Papaya
+ * @author Maya Ashizumi-Munn | 17978640
  *
  */
 public class TailMotor extends TreeNode {

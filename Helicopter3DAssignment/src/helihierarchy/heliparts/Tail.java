@@ -6,6 +6,12 @@ import com.jogamp.opengl.glu.GLU;
 import resources.Colours;
 import shapes.Cylinder;
 
+/**
+ * Draws the tail of the helicopter
+ * 
+ * @author Maya Ashizumi-Munn | 17978640
+ *
+ */
 public class Tail extends TreeNode {
 
 	//Pointer to quadric object (display list)

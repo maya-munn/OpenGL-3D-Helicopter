@@ -10,10 +10,9 @@ import helihierarchy.heliparts.TailMotor;
 import helihierarchy.heliparts.TreeNode;
 
 /**
- * Called from main classes init method, this instantiates helicopter 
+ * Called from main classes init method, this instantiates the helicopter
  * 
- * @author Papaya
- *
+ * @author Maya Ashizumi-Munn | 17978640
  */
 public class CreateHelicopter {
 	
@@ -56,6 +55,7 @@ public class CreateHelicopter {
 	
 	//*************************************//
 	
+	//This 
 	public TreeNode createHeliParts(TreeNode heliBody) {
 		gl.glPushMatrix();
 			gl.glPushMatrix();
@@ -101,12 +101,12 @@ public class CreateHelicopter {
 					//Move left
 					tailMotor.addChild(leftTailMotor);
 					leftTailMotor.setTranslation(0, 0, tailMotor.getRadius() / 2);
-					
+				
 					gl.glPushMatrix();
 						//Add rotors
 						leftTailRotor = new Rotor(1); //Length of blades
+						leftTailRotor.setRotation(45, 1, 0, 0);
 						leftTailRotor.setTranslation(-leftTailRotor.getLength() / 4, 0, 0);
-						leftTailRotor.setRotation(90, 1, 0, 0);
 						leftTailMotor.addChild(leftTailRotor);
 					gl.glPopMatrix();
 				gl.glPopMatrix();
@@ -120,8 +120,8 @@ public class CreateHelicopter {
 					gl.glPushMatrix();
 						//Add rotors
 						rightTailRotor = new Rotor(1); //Length of blades
+						rightTailRotor.setRotation(45, 1, 0, 0);
 						rightTailRotor.setTranslation(-rightTailRotor.getLength() / 4, 0, 0);
-						rightTailRotor.setRotation(90, 1, 0, 0);
 						rightTailMotor.addChild(rightTailRotor);
 					gl.glPopMatrix();
 				gl.glPopMatrix();
@@ -131,6 +131,7 @@ public class CreateHelicopter {
 			
 		gl.glPopMatrix();
 		
+		//Move helicopter to its default position
 		heliBody.setTranslation(heliXPos, heliYPos, heliZPos);
 		return heliBody;
 	}

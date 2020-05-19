@@ -4,6 +4,7 @@ package helihierarchy.heliparts;
  * A generic scene graph tree node.
  *
  * @author Jacqueline Whalley
+ * Modified by Maya Ashizumi-Munn
  */
 
 import java.util.ArrayList;
@@ -33,13 +34,14 @@ public abstract class TreeNode {
 	GLU glu;
 	
 	 // drawing code for this branch of the tree
-	 public void draw(GL2 gl, com.jogamp.opengl.glu.GLU glu2){
+	 public void draw(GL2 gl, GLU glu2) {
 		 this.glu = glu2;
 	
 		 gl.glPushMatrix();
 		
 		 // make the transformation for this branch of the tree
 		 transformNode(gl);
+		 rotateNode(gl);
 	
 		 // draw the current node
 		 drawNode(gl);

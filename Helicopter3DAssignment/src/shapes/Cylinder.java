@@ -4,11 +4,18 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUquadric;
 
+/**
+ * Draws a custom cylinder
+ * 
+ * @author Maya Ashizumi-Munn
+ */
 public class Cylinder {
 	
+	//GL and GLU library references
 	GL2 gl;
 	GLU glu;
 	
+	//Cylinder variables
 	double baseR;
 	double topR;
 	double height;
@@ -22,15 +29,6 @@ public class Cylinder {
 	
 	/**
 	 * Instantiates a custom cylinder
-	 * 
-	 * @param gl2
-	 * @param glu2
-	 * @param baseR radius of cylinder base
-	 * @param topR radius of cylinder top
-	 * @param slices number of slices
-	 * @param stacks number of stacks
-	 * @param drawStyle the draw style (filled, wireframe)
-	 * @throws Exception
 	 */
 	public Cylinder(GL2 gl2, GLU glu, double baseR, double topR, double height,
 					int slices, int stacks, int drawStyle) throws Exception {
@@ -69,7 +67,7 @@ public class Cylinder {
 		glu.gluDeleteQuadric(cylinder);
 	}
 	
-	//************************************//
+	//**** Setter methods ****************//
 	
 	private void setGL(GL2 gl2, GLU glu) {
 		this.gl = gl2;
@@ -100,7 +98,7 @@ public class Cylinder {
 		this.drawStyle = drawStyle;
 	}
 	
-	//************************************//
+	//**** Getter methods ****************//
 	
 	private double getBaseRadius() {
 		return this.baseR;

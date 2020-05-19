@@ -4,8 +4,6 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.awt.GLCanvas;
@@ -18,7 +16,7 @@ import com.jogamp.opengl.glu.GLU;
  * in projections and camera movement from example code.
  * 
  * @author Jacqueline Whalley
- * Modified by Maya Ashizumi-Munn
+ * Modified by Maya Ashizumi-Munn | 17978640
  */
 public class Camera implements MouseListener, MouseMotionListener {
 	
@@ -46,6 +44,8 @@ public class Camera implements MouseListener, MouseMotionListener {
 	//GL drawing functionalities
 	GL2 gl;
 	GLU glu;
+	
+	//**********************************************//
 	 
 	public Camera(GLCanvas canvas) {
 		canvas.addMouseListener(this);
@@ -64,15 +64,22 @@ public class Camera implements MouseListener, MouseMotionListener {
         gl.glLoadIdentity();
         
         //Let rotation revolve around the look at center point
-        	double rotation = distanceToOrigin * Math.acos(Math.toRadians(angleY));
-        	double eyeZ = rotation * Math.cos(Math.toRadians(angleX));
-        	double eyeX = rotation * Math.sin(Math.toRadians(angleX));
-        	double eyeY = distanceToOrigin * Math.sin(Math.toRadians(angleY));
+    	double distance = distanceToOrigin * Math.acos(Math.toRadians(angleY));
+    	double eyeZ = distance * Math.cos(Math.toRadians(angleX));
+    	double eyeX = distance * Math.sin(Math.toRadians(angleX));
+    	double eyeY = distanceToOrigin * Math.sin(Math.toRadians(angleY));
         
         //Set look at based on rotation, zoom
-        glu.gluLookAt(eyeX + lookAtPos[0], eyeY + lookAtPos[1] + 5, eyeZ, 			//Eye
-			  		  lookAtPos[0], lookAtPos[1], lookAtPos[2], 	//Look at
-				      0,            1,            0);				//Up
+        glu.gluLookAt(eyeX + lookAtPos[0], eyeY + lookAtPos[1] + 5, eyeZ + lookAtPos[2], 	//Eye
+			  		  lookAtPos[0],        lookAtPos[1],            lookAtPos[2], 			//Look at
+				      0,                   1,                       0);						//Up
+	}
+	
+	//**********************************************//
+	
+	//Returns the current camera Y angle
+	public double getAngleY() {
+		return this.angleY;
 	}
 	
 	/**
@@ -81,7 +88,7 @@ public class Camera implements MouseListener, MouseMotionListener {
      */
     public void setLookAt(double x, double y, double z) {
         //Set look at based on helicopter position
-    	this.lookAtPos[0] = x; this.lookAtPos[1] = y; this.lookAtPos[2] = z;
+    	this.lookAtPos = new double[] {x, y, z};
     }
  
     public double getDistance() {
@@ -119,10 +126,21 @@ public class Camera implements MouseListener, MouseMotionListener {
     }
     
     //Resets camera rotation
-    public void resetCameraRotation() {
+    public void resetCameraRotation(boolean resetDistance) {
     	angleX = 90; angleY = 10;
-    	distanceToOrigin = MIN_DIST; //Default
+    	if (resetDistance) {
+    		distanceToOrigin = MIN_DIST; //Reset to default
+    	}
     	oldMousePos = null;
+    }
+    
+    //Called when left or right arrow key pressed
+    public void changeHorizontalCameraRotation(double angle) {
+    	//Reset camera
+    	boolean resetDistance = false;
+    	this.resetCameraRotation(resetDistance);
+    	//Add changed angle to angleX
+    	angleX += angle;
     }
     
     //**********************************************//
